@@ -52,6 +52,7 @@ legal(stop)
 
 toggle(M,N) :: on(M,N)  ==> ~on(M,N)
 toggle(M,N) :: ~on(M,N)  ==> on(M,N)
+
 mark(M,N) :: toggle(M,N)
 
 mark(M, N) :: successor(M, 2) ==> toggle(2, N)
@@ -62,13 +63,13 @@ mark(M, N) :: successor(N, 2) ==> toggle(M, 2)
 mark(M, N) :: successor(N, 3) ==> toggle(M, 3)
 mark(M, N) :: successor(N, 4) ==> toggle(M, 4)
 
+mark(M, N) :: successor(1, M) ==> toggle(1, N)
 mark(M, N) :: successor(2, M) ==> toggle(2, N)
 mark(M, N) :: successor(3, M) ==> toggle(3, N)
-mark(M, N) :: successor(4, M) ==> toggle(4, N)
 
+mark(M, N) :: successor(1, N) ==> toggle(M, 1)
 mark(M, N) :: successor(2, N) ==> toggle(M, 2)
 mark(M, N) :: successor(3, N) ==> toggle(M, 3)
-mark(M, N) :: successor(4, N) ==> toggle(M, 4)
 
 stop :: done
 
