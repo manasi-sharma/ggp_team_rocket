@@ -1,0 +1,3 @@
+Team name: Team Rocket
+Id: team_rocket
+LightsOut is a one player game base on a 1995 electronic game (https://en.wikipedia.org/wiki/Lights_Out_(game)). Player is shown a 4x4 grid, each grid represents a light. Initially some lights are turned on. Player can mark any grid, lights in the selected grid and all adjacent grids will toggle its status (turning from off to on or on to off). The goal for this game is to turn all the lights off.
