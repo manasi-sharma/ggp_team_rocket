@@ -1,0 +1,200 @@
+<html><!--=======================================================================--><head>
+<meta http-equiv="content-type" content="text/html; charset=windows-1252">
+  <title>Standalone</title>
+  <script type="text/javascript" src="Standalone_files/epilog.js"></script>
+  <script type="text/javascript" src="Standalone_files/standalone.js"></script>
+  <script type="text/javascript">
+//==============================================================================
+// Stylesheet goes here
+//==============================================================================
+
+function renderstate (state)
+{var table = document.createElement('table');
+  table.setAttribute('cellspacing','0');
+  table.setAttribute('bgcolor','#f4f6f8');
+  table.setAttribute('border','2');
+  for (var i=0; i<4; i++) {makerow(table,i,state)};
+  return table}
+
+function makerow (table,rownum,state)
+{var row =table.insertRow(rownum);
+  for (var j=0; j<4; j++) {makecell(row,rownum,j,state)};
+  return row}
+
+function makecell (row,rownum,colnum,state)
+{var cell = row.insertCell(row.cells.length);
+  cell.setAttribute('width','40');
+  cell.setAttribute('height','40');
+  cell.setAttribute('align','center');
+  cell.setAttribute('valign','center');
+  if (compfindp(seq('on',(rownum+1).toString(),(colnum+1).toString()),state,seq()))
+  {cell.innerHTML = '<img src="http://www.clker.com/cliparts/4/u/l/C/i/P/lime-square-md.png" width="50" height="50"/>'}
+  else {cell.innerHTML = '<img src="http://www.clker.com/cliparts/w/x/m/w/d/D/green-square-md.png" width="50" height="50"/>'};
+  if (compfindp('terminal',state,library))
+  {cell.innerHTML = 'Game over'}
+  return cell}
+
+
+
+
+//==============================================================================
+// End of stylesheet
+//==============================================================================
+  </script>
+</head>
+
+<!--=======================================================================-->
+
+<body style="margin:0" onload="initialize()">
+  <center>
+    <table width="720" cellspacing="0" cellpadding="40" bgcolor="#ffffff">
+      <tbody><tr>
+        <td>
+
+<!--=======================================================================-->
+
+<center>
+  <table width="640" cellpadding="0">
+    <tbody><tr>
+      <td width="140" valign="center" align="center">
+        <img src="Standalone_files/ggp.jpg" width="130">
+      </td>
+      <td align="center">
+        <span style="font-size:18pt">&nbsp;</span>
+        <span style="font-size:32pt">Gamemaster</span><br>
+      </td>
+      <td style="color:#000066;font-size:16px" width="140" align="center">
+        <i>General<br>Game<br>Playing</i>
+      </td>
+    </tr>
+  </tbody></table>
+</center>
+
+<!--=======================================================================-->
+
+<br>
+<table width="640" cellspacing="0" cellpadding="8" border="1" bgcolor="#f4f8f8">
+  <tbody><tr height="40">
+    <td align="center">
+<table style="color:#000066;font-size:18px">
+  <tbody><tr>
+    <td width="180">Protocol: standalone</td>
+  </tr>
+</tbody></table>
+    </td>
+  </tr>
+</tbody></table>
+<br>
+
+<!--=======================================================================-->
+
+<center>
+  <br>
+  <div id="stateholder"></div>
+  <br>
+  Move: <select id="actionholder" onchange="execute(read(this.value))"></select>
+</center>
+
+<!--=======================================================================-->
+
+        </td>
+      </tr>
+    </tbody></table>
+  </center>
+
+
+
+
+  <textarea id="library" type="text/hrf" style="display:none">%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%% Rulesheet goes here
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%% lightsout
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%% metadata
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+role(robot)
+
+base(on(M,N)) :- index(M) & index(N)
+base(done)
+
+action(mark(M,N)) :- index(M) & index(N)
+action(stop)
+
+index(1)
+index(2)
+index(3)
+index(4)
+
+successor(1, 2)
+successor(2, 3)
+successor(3, 4)
+successor(4, 4)
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%% init
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+init(control(robot))
+init(on(1,1))
+init(on(1,2))
+init(on(2,1))
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%% legal
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+legal(mark(M,N)) :- index(M) & index(N)
+legal(stop)
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%% operations
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+toggle(M,N) :: on(M,N)  ==> ~on(M,N)
+toggle(M,N) :: ~on(M,N)  ==> on(M,N)
+
+mark(M,N) :: toggle(M,N)
+
+mark(M, N) :: successor(M, Y) ==> toggle(Y, N)
+mark(M, N) :: successor(N, Y) ==> toggle(M, Y)
+mark(M, N) :: successor(Y, M) ==> toggle(Y, N)
+mark(M, N) :: successor(Y, N) ==> toggle(M, Y)
+
+stop :: done
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%% goal
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+goal(x,100) :- ~open
+goal(x,0) :- open
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%% terminal
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+terminal :- ~open
+terminal :- done
+
+open :- on(M,N)
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%% End of rulesheet
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+  </textarea>
+
+<!--=======================================================================-->
+
+
+</body><!--=======================================================================--></html>
