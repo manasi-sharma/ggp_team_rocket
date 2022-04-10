@@ -27,6 +27,11 @@ pred(2) :- 1
 pred(3) :- 2
 pred(4) :- 3
 
+successor(1, 2)
+successor(2, 3)
+successor(3, 4)
+successor(4, 4)
+
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%% init
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -47,7 +52,24 @@ legal(stop)
 
 toggle(M,N) :: on(M,N)  ==> ~on(M,N)
 toggle(M,N) :: ~on(M,N)  ==> on(M,N)
-mark(M,N) :: toggle(M,N) & toggle(succ(M),N) & toggle(pred(M),N) & toggle(M,succ(N)) & toggle(M,pred(N))
+mark(M,N) :: toggle(M,N)
+
+mark(M, N) :: successor(M, 2) ==> toggle(2, N)
+mark(M, N) :: successor(M, 3) ==> toggle(3, N)
+mark(M, N) :: successor(M, 4) ==> toggle(4, N)
+
+mark(M, N) :: successor(N, 2) ==> toggle(M, 2)
+mark(M, N) :: successor(N, 3) ==> toggle(M, 3)
+mark(M, N) :: successor(N, 4) ==> toggle(M, 4)
+
+mark(M, N) :: successor(2, M) ==> toggle(2, N)
+mark(M, N) :: successor(3, M) ==> toggle(3, N)
+mark(M, N) :: successor(4, M) ==> toggle(4, N)
+
+mark(M, N) :: successor(2, N) ==> toggle(M, 2)
+mark(M, N) :: successor(3, N) ==> toggle(M, 3)
+mark(M, N) :: successor(4, N) ==> toggle(M, 4)
+
 stop :: done
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
