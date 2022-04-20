@@ -8,8 +8,8 @@
 // Player parameters
 //==============================================================================
 
-var player = 'alpha_beta_rocket';
-var manager = 'manager';
+var player = 'team_rocket_alphabeta';
+var manager = 'tester_team_rocket';
 
 function doplayer ()
  {player = read(prompt("What is your player's identifier?"));
@@ -87,7 +87,8 @@ function testminimax (role,state)
 
 function minimax (role,state, alpha, beta)
  {nodes = nodes + 1;
-  console.log("DEBUGDEBUGDEBUG");
+  console.log("Inside minimax");
+  console.log(nodes);
   if (findterminalp(state,library))
      {terminals = terminals + 1; return findreward(role,state,library)*1};
   var active = findcontrol(state,library);
