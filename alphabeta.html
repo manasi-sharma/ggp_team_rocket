@@ -1,7 +1,8 @@
 <html><!--=======================================================================--><head>
-  <title>Legal</title>
-  <script type="text/javascript" src="http://gamemaster.stanford.edu/javascript/autoplayer.js"></script><script type="text/javascript" src="http://epilog.stanford.edu/javascript/epilog.js"></script>
-  
+<meta http-equiv="content-type" content="text/html; charset=windows-1252">
+  <title>Minimax</title>
+  <script type="text/javascript" src="alphabeta_files/epilog.js"></script>
+  <script type="text/javascript" src="alphabeta_files/autoplayer.js"></script>
   <script type="text/javascript">
 //==============================================================================
 // Player parameters
@@ -201,7 +202,7 @@ function simulate (move,state,rules)
   <table width="640" cellpadding="0">
     <tbody><tr>
       <td width="180" valign="center" align="center">
-        <img src="http://gamemaster.stanford.edu/images/ggp.jpg" width="130">
+        <img src="alphabeta_files/ggp.jpg" width="130">
       </td>
       <td align="center">
         <span style="font-size:18pt">&nbsp;</span>
@@ -224,7 +225,7 @@ function simulate (move,state,rules)
   <tbody><tr>
     <td>
 Protocol: autoplayer<br>
-Identifier: <span id="player">team_rocket</span> <img src="http://gamemaster.stanford.edu/images/pencil.gif" onclick="doplayer()">
+Identifier: <span id="player">minimax</span> <img src="alphabeta_files/pencil.gif" onclick="doplayer()">
     </td>
   </tr>
 </tbody></table>
@@ -240,10 +241,10 @@ Identifier: <span id="player">team_rocket</span> <img src="http://gamemaster.sta
   <br>
   <input type="button" id="clearer" value="Clear" onclick="doclear()">
   <input type="button" id="connector" value="Connect" onclick="doconnect()">
-  <input type="button" id="disconnector" value="Disconnect" disabled="" onclick="dodisconnect()">
+  <input type="button" id="disconnector" value="Disconnect" disabled="disabled" onclick="dodisconnect()">
   <br>
   <br>
-  <textarea id="transcript" style="font-family:courier" rows="30" cols="80" readonly=""></textarea>
+  <textarea id="transcript" style="font-family:courier" rows="30" cols="80" readonly="readonly"></textarea>
 </center>
 
 <!--=======================================================================-->
