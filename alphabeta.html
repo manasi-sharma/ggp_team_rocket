@@ -24,6 +24,7 @@ function domanager ()
 //==============================================================================
 // End of player parameters
 //==============================================================================
+  </script>
   <script type='text/javascript'>
 //==============================================================================
 // Player code goes here
@@ -79,13 +80,14 @@ function testminimax (role,state)
  {nodes = 0;
   terminals = 0;
   var beg = performance.now();
-  var result = minimax(role,state);
+  var result = minimax(role,state, -1, 101);
   var end = performance.now();
   elapsed = end-beg;
   return result}
 
 function minimax (role,state, alpha, beta)
  {nodes = nodes + 1;
+  console.log("DEBUGDEBUGDEBUG");
   if (findterminalp(state,library))
      {terminals = terminals + 1; return findreward(role,state,library)*1};
   var active = findcontrol(state,library);
@@ -114,7 +116,7 @@ function minimize (active,role,state, alpha, beta)
        var newscore = minimax(role, newstate, alpha, beta);
        if (newscore<beta) {beta = newscore};
        if (newscore===0) {return 0};
-       if (newscore<score) {score = newscore}
+       if (newscore<score) {score = newscore};
        if (newscore<=alpha) {return newscore}};
   return score}
 

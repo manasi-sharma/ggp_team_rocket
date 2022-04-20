@@ -1,0 +1,258 @@
+
+<!-- saved from url=(0064)http://ggp.stanford.edu/gamemaster/autoplayers/minimaxdepth.html -->
+<html><!--=======================================================================--><head><meta http-equiv="Content-Type" content="text/html; charset=windows-1252">
+  <title>Minimaxdepth</title>
+  <script type="text/javascript" src="./Minimaxdepth_files/epilog.js"></script>
+  <script type="text/javascript" src="./Minimaxdepth_files/autoplayer.js"></script>
+  <script type="text/javascript">
+//==============================================================================
+// Player parameters
+//==============================================================================
+
+var player = 'minimaxdepth';
+var manager = 'manager';
+
+function doplayer ()
+ {player = read(prompt("What is your player's identifier?"));
+  document.getElementById('player').innerHTML = player;
+  return true}
+
+function domanager ()
+ {manager = read(prompt("What is your manager's identifier?"));
+  document.getElementById('manager').innerHTML = manager;
+  return true}
+
+//==============================================================================
+// End of player parameters
+//==============================================================================
+  </script>
+  <script type="text/javascript">
+//==============================================================================
+// Player code goes here
+//==============================================================================
+
+function ping ()
+ {return 'ready'}
+
+function start (r,rs,sc,pc)
+ {role = r;
+  library = definemorerules([],rs.slice(1));
+  roles = findroles(library);
+  state = findinits(library);
+  startclock = sc;
+  playclock = pc;
+  return 'ready'}
+
+function play (move)
+ {if (move!==nil) {compexecute(move,state,library)};
+  return playminimaxdepth(role)}
+
+function stop (move)
+ {return false}
+
+function abort ()
+ {return false}
+
+//==============================================================================
+// minimaxdepth
+//==============================================================================
+
+var nodes = 0;
+var terminals = 0;
+var elapsed = 0;
+
+function playminimaxdepth (role)
+ {var actions = shuffle(findlegals(state,library));
+  if (actions.length===0) {return false};
+  if (actions.length===1) {return actions[0]};
+  var action = actions[0];
+  var score = 0;
+  nodes = 0
+  for (var i=0; i<actions.length; i++)
+      {console.log(grind(actions[i]));
+       var newstate = simulate(actions[i],state,library);
+       var newscore = minimaxdepth(role,newstate,depth);
+       console.log(newscore);
+       if (newscore===100) {return actions[i]};
+       if (newscore>score) {action = actions[i]; score = newscore}};
+  return action}
+
+function minimaxdepth (role,state,depth)
+ {nodes = nodes + 1;
+  if (findterminalp(state,library))
+     {terminals = terminals + 1; return findreward(role,state,library)*1};
+  if (depth<=0) {terminals = terminals + 1; return findreward(role,state,library)};
+  var active = findcontrol(state,library);
+  if (active===role) {return maximizedepth(active,role,state,depth)};
+  return minimizedepth(active,role,state,depth)}
+
+function maximizedepth (active,role,state,depth)
+ {var actions = findlegals(state,library);
+  if (actions.length===0) {return 0};
+  var score = 0;
+  for (var i=0; i<actions.length; i++)
+      {var newstate = simulate(actions[i],state,library);
+       var newscore = minimaxdepth(role,newstate,depth-1);
+       if (newscore===100) {return 100};
+       if (newscore>score) {score = newscore}};
+  return score}
+
+function minimizedepth (active,role,state,depth)
+ {var actions = findlegals(state,library);
+  if (actions.length===0) {return 0};
+  var score = 100;
+  for (var i=0; i<actions.length; i++)
+      {var newstate = simulate(actions[i],state,library);
+       var newscore = minimaxdepth(role,newstate,depth-1);
+       if (newscore===0) {return 0};
+       if (newscore<score) {score = newscore}};
+  return score}
+
+function betterp (x,y)
+ {if (x[0]>y[0]) {return true};
+  if (x[0]===y[0]) {return (x[1]>y[1])};
+  return false}
+
+function worsep (x,y)
+ {if (x[0]<y[0]) {return true};
+  if (x[0]===y[0]) {return (x[1]<y[1])};
+  return false}
+
+function shuffle (array)
+ {for (var i = array.length-1; i>0; i--)
+      {var j = Math.floor(Math.random() * (i + 1));
+       var temp = array[i];
+       array[i] = array[j];
+       array[j] = temp};
+  return array}
+
+//==============================================================================
+// Basics
+//==============================================================================
+
+function findroles (rules)
+ {return compfinds('R',seq('role','R'),seq(),rules)}
+
+function findbases (rules)
+ {return compfinds('P',seq('base','P'),seq(),rules)}
+
+function findactions (rules)
+ {return compfinds('A',seq('action','A'),seq(),rules)}
+
+function findinits (rules)
+ {return compfinds('P',seq('init','P'),seq(),rules)}
+
+function findcontrol (facts,rules)
+ {return compfindx('X',seq('control','X'),facts,rules)}
+
+function findlegalp (move,facts,rules)
+ {return compfindp(seq('legal',move),facts,rules)}
+
+function findlegalx (facts,rules)
+ {return compfindx('X',seq('legal','X'),facts,rules)}
+
+function findlegals (facts,rules)
+ {return compfinds('X',seq('legal','X'),facts,rules)}
+
+function findreward (role,facts,rules)
+ {var value = compfindx('R',seq('goal',role,'R'),facts,rules);
+  if (value) {return value};
+  return 0}
+
+function findterminalp (facts,rules)
+ {return compfindp('terminal',facts,rules)}
+
+//------------------------------------------------------------------------------
+
+function simulate (move,state,rules)
+ {var deltas = compexpand(move,state,rules);
+  var additions = [];
+  var deletions = [];
+  for (var i=0; i<deltas.length; i++)
+      {if (symbolp(deltas[i])) {additions.push(deltas[i]); continue};
+       if (deltas[i][0]==='not') {deletions.push(deltas[i][1]); continue};
+       additions.push(deltas[i])};
+  var newstate = [];
+  for (i = 0; i<state.length; i++)
+      {if (find(state[i],additions)) {continue};
+       if (find(state[i],deletions)) {continue};
+       newstate.push(state[i])};
+  return newstate.concat(additions)}
+
+//==============================================================================
+// End of player code
+//==============================================================================
+  </script>
+</head>
+
+<!--=======================================================================-->
+
+<body bgcolor="#aabbbb" class="vsc-initialized" data-new-gr-c-s-check-loaded="14.1057.0" data-gr-ext-installed="">
+  <center>
+    <table width="720" cellspacing="0" cellpadding="40" bgcolor="#ffffff">
+      <tbody><tr>
+        <td>
+
+<!--=======================================================================-->
+
+<center>
+  <table width="640" cellpadding="0">
+    <tbody><tr>
+      <td width="180" align="center" valign="center">
+        <img width="130" src="./Minimaxdepth_files/ggp.jpg">
+      </td>
+      <td align="center">
+        <span style="font-size:18pt">&nbsp;</span>
+        <span style="font-size:32pt">Gamemaster</span><br>
+      </td>
+      <td width="180" align="center" style="color:#000066;font-size:18px">
+        <i>General<br>Game<br>Playing</i>
+      </td>
+    </tr>
+  </tbody></table>
+</center>
+
+<!--=======================================================================-->
+
+<br>
+<table width="640" cellpadding="8" cellspacing="0" border="1">
+  <tbody><tr height="40">
+     <td align="center">
+<table style="color:#000066;font-size:18px">
+  <tbody><tr>
+    <td>
+Protocol: autoplayer<br>
+Identifier: <span id="player">team_rocket_minimax</span> <img src="./Minimaxdepth_files/pencil.gif" onclick="doplayer()">
+    </td>
+  </tr>
+</tbody></table>
+    </td>
+  </tr>
+</tbody></table>
+<br>
+
+<!--=======================================================================-->
+
+<center>
+  <br>
+  <br>
+  <input type="button" id="clearer" value="Clear" onclick="doclear()">
+  <input type="button" id="connector" value="Connect" onclick="doconnect()">
+  <input type="button" id="disconnector" value="Disconnect" onclick="dodisconnect()" disabled="">
+  <br>
+  <br>
+  <textarea id="transcript" style="font-family:courier" rows="30" cols="80" readonly=""></textarea>
+</center>
+
+<!--=======================================================================-->
+
+        </td>
+      </tr>
+    </tbody></table>
+  </center>
+
+
+<!--=======================================================================-->
+
+
+</body><grammarly-desktop-integration data-grammarly-shadow-root="true"></grammarly-desktop-integration></html>
