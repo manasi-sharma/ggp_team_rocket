@@ -3,7 +3,7 @@
 <!--=======================================================================-->
 
 <head>
-  <title>Minimaxdepth</title>
+  <title>MCS</title>
   <script type='text/javascript' src='http://epilog.stanford.edu/javascript/epilog.js'></script>
   <script type='text/javascript' src='http://gamemaster.stanford.edu/javascript/autoplayer.js'></script>
   <script type='text/javascript'>
@@ -11,7 +11,7 @@
 // Player parameters
 //==============================================================================
 
-var player = 'minimaxdepth';
+var player = 'team_rocket_mcs';
 var manager = 'tester_team_rocket';
 
 function doplayer ()
@@ -62,6 +62,7 @@ function abort ()
 var nodes = 0;
 var terminals = 0;
 var elapsed = 0;
+var MAX_DEPTH = 1;
 
 function playminimaxdepth (role)
  {var actions = shuffle(findlegals(state,library));
@@ -74,7 +75,7 @@ function playminimaxdepth (role)
   for (var i=0; i<actions.length; i++)
       {console.log(grind(actions[i]));
        var newstate = simulate(actions[i],state,library);
-       var newscore = minimaxdepth(role,newstate,1);
+       var newscore = minimaxdepth(role,newstate,MAX_DEPTH);
        console.log('inloop: '+newscore);
        console.log('inloop: '+maxscore);
        if (newscore===100) {return actions[i]};
@@ -88,7 +89,7 @@ function minimaxdepth (role,state,depth)
  {nodes = nodes + 1;
   if (findterminalp(state,library))
      {terminals = terminals + 1; return findreward(role,state,library)*1};
-  if (depth<=0) {terminals = terminals + 1; return findreward(role,state,library)*1};
+  if (depth<=0) {terminals = terminals + 1; return montecarlo(role, state)*1};
   var active = findcontrol(state,library);
   if (active===role) {return maximizedepth(active,role,state,depth)};
   return minimizedepth(active,role,state,depth)}
@@ -132,6 +133,26 @@ function shuffle (array)
        array[i] = array[j];
        array[j] = temp};
   return array}
+
+function montecarlo (role, state)
+ {//return findreward(role,state,library)*1;
+   var total = 0;
+  var count = 1;
+  for (var i=0; i<count; i++)
+  {total = total + depthcharge(role, state)};
+  return total/count}
+
+function depthcharge (role,state)
+{if (findterminalp(state,library))
+  {return findreward(role,state,library)*1};
+  var active = findcontrol(state,library);
+  var actions = findlegals(state,library);
+  var best = randomindex(actions.length);
+  var newstate = simulate(actions[best],state,library);
+  return depthcharge(role,newstate)}
+
+function randomindex (n)
+ {return Math.floor(Math.random()*n)}
 
 //==============================================================================
 // Basics

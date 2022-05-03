@@ -1,17 +1,15 @@
-<html>
 
-<!--=======================================================================-->
-
-<head>
-  <title>Minimaxdepth</title>
-  <script type='text/javascript' src='http://epilog.stanford.edu/javascript/epilog.js'></script>
-  <script type='text/javascript' src='http://gamemaster.stanford.edu/javascript/autoplayer.js'></script>
-  <script type='text/javascript'>
+<!-- saved from url=(0055)http://ggp.stanford.edu/gamemaster/autoplayers/mcs.html -->
+<html><!--=======================================================================--><head><meta http-equiv="Content-Type" content="text/html; charset=windows-1252">
+  <title>MCS</title>
+  <script type="text/javascript" src="./MCS_files/epilog.js"></script>
+  <script type="text/javascript" src="./MCS_files/autoplayer.js"></script>
+  <script type="text/javascript">
 //==============================================================================
 // Player parameters
 //==============================================================================
 
-var player = 'minimaxdepth';
+var player = 'team_rocket_mcs';
 var manager = 'tester_team_rocket';
 
 function doplayer ()
@@ -28,7 +26,7 @@ function domanager ()
 // End of player parameters
 //==============================================================================
   </script>
-  <script type='text/javascript'>
+  <script type="text/javascript">
 //==============================================================================
 // Player code goes here
 //==============================================================================
@@ -47,7 +45,8 @@ function start (r,rs,sc,pc)
 
 function play (move)
  {if (move!==nil) {compexecute(move,state,library)};
-  return playminimaxdepth(role)}
+  if (findcontrol(state,library)!==role) {return false};
+  return playmcs(role, state)}
 
 function stop (move)
  {return false}
@@ -56,82 +55,63 @@ function abort ()
  {return false}
 
 //==============================================================================
-// minimaxdepth
+// mcs
 //==============================================================================
 
-var nodes = 0;
-var terminals = 0;
-var elapsed = 0;
+var depthcharges = 500;
 
-function playminimaxdepth (role)
- {var actions = shuffle(findlegals(state,library));
+function playmcs (role, state)
+ {var actions = findlegals(state,library);
   if (actions.length===0) {return false};
   if (actions.length===1) {return actions[0]};
   var action = actions[0];
-  var maxscore = 0;
-  nodes = 0
-  console.log('START');
-  for (var i=0; i<actions.length; i++)
-      {console.log(grind(actions[i]));
-       var newstate = simulate(actions[i],state,library);
-       var newscore = minimaxdepth(role,newstate,1);
-       console.log('inloop: '+newscore);
-       console.log('inloop: '+maxscore);
-       if (newscore===100) {return actions[i]};
-       if (newscore>maxscore) {action = actions[i]; maxscore = newscore; console.log('CHECKING'); console.log('inif: '+maxscore); console.log(grind(action));}};
-  console.log('VIBES');
-  console.log('final: '+maxscore);
-  console.log(grind(action));
+  var score = 0;
+  var scores = seq();
+  for (var i=0; i<actions.length; i++) {scores[i] = 0};
+  var i = 0;
+  var probes = 0;
+  while (probes<depthcharges)
+   {if (i>=actions.length) {i = 0};
+    var result = depthcharge(role,state);
+    scores[i] = scores[i] + result;
+    if (scores[i]>score) {score = scores[i]; action = actions[i]};
+    probes = probes + 1;
+    i++};
+  console.log(actions);
+  console.log(scores);
   return action}
 
-function minimaxdepth (role,state,depth)
- {nodes = nodes + 1;
-  if (findterminalp(state,library))
-     {terminals = terminals + 1; return findreward(role,state,library)*1};
-  if (depth<=0) {terminals = terminals + 1; return findreward(role,state,library)*1};
-  var active = findcontrol(state,library);
-  if (active===role) {return maximizedepth(active,role,state,depth)};
-  return minimizedepth(active,role,state,depth)}
-
-function maximizedepth (active,role,state,depth)
+function bestmcs (role,state)
  {var actions = findlegals(state,library);
-  if (actions.length===0) {return 0};
+  if (actions.length===0) {return false};
+  if (actions.length===1) {return actions[0]};
+  var action = actions[0];
   var score = 0;
-  for (var i=0; i<actions.length; i++)
-      {var newstate = simulate(actions[i],state,library);
-       var newscore = minimaxdepth(role,newstate,depth-1);
-       if (newscore===100) {return 100};
-       if (newscore>score) {score = newscore}};
-  return score}
+  var scores = seq();
+  for (var i=0; i<actions.length; i++) {scores[i] = 0};
+  var i = 0;
+  //TODO: Add deadline definition
+  while (Date.now()<deadline)
+   {if (i>=actions.length) {i = 0};
+    var result = depthcharge(role,state);
+    scores[i] = scores[i] + result;
+    if (scores[i]>score) {score = scores[i]; action = actions[i]};
+    i++};
+  console.log(actions);
+  console.log(scores);
+  return action}
 
-function minimizedepth (active,role,state,depth)
- {var actions = findlegals(state,library);
-  if (actions.length===0) {return 0};
-  var score = 100;
-  for (var i=0; i<actions.length; i++)
-      {var newstate = simulate(actions[i],state,library);
-       var newscore = minimaxdepth(role,newstate,depth-1);
-       if (newscore===0) {return 0};
-       if (newscore<score) {score = newscore}};
-  return score}
+function depthcharge (role,state)
+ {if (findterminalp(state,library))
+     {return findreward(role,state,library)*1};
+  var active = findcontrol(state,library);
+  var actions = findlegals(state,library);
+  var best = randomindex(actions.length);
+  var newstate = simulate(actions[best],state,library);
+  return depthcharge(role,newstate)}
 
-function betterp (x,y)
- {if (x[0]>y[0]) {return true};
-  if (x[0]===y[0]) {return (x[1]>y[1])};
-  return false}
-
-function worsep (x,y)
- {if (x[0]<y[0]) {return true};
-  if (x[0]===y[0]) {return (x[1]<y[1])};
-  return false}
-
-function shuffle (array)
- {for (var i = array.length-1; i>0; i--)
-      {var j = Math.floor(Math.random() * (i + 1));
-       var temp = array[i];
-       array[i] = array[j];
-       array[j] = temp};
-  return array}
+function randomindex (n)
+ {return Math.floor(Math.random()*n)}
 
 //==============================================================================
 // Basics
@@ -190,75 +170,82 @@ function simulate (move,state,rules)
 // End of player code
 //==============================================================================
   </script>
-</head>
+<script>
+        window.addEventListener("message", async (event) => {
+          if (event.data && event.data.sender === "sabre") {
+            dijit.byId(event.data.target).set("value", event.data.value);
+          }
+        });
+        </script></head>
 
 <!--=======================================================================-->
 
-<body bgcolor='#aabbbb'>
+<body bgcolor="#aabbbb" class="vsc-initialized" data-new-gr-c-s-check-loaded="14.1058.0" data-gr-ext-installed="">
   <center>
-    <table width='720' cellspacing='0' cellpadding='40' bgcolor='#ffffff'>
-      <tr>
+    <table width="720" cellspacing="0" cellpadding="40" bgcolor="#ffffff">
+      <tbody><tr>
         <td>
 
 <!--=======================================================================-->
 
 <center>
-  <table width='640' cellpadding='0'>
-    <tr>
-      <td width='180' align='center' valign='center'>
-        <img width='130' src='http://gamemaster.stanford.edu/gamemaster/images/ggp.jpg'/>
+  <table width="640" cellpadding="0">
+    <tbody><tr>
+      <td width="180" align="center" valign="center">
+        <img width="130" src="./MCS_files/ggp.jpg">
       </td>
-      <td align='center'>
-        <span style='font-size:18pt'>&nbsp;</span>
-        <span style='font-size:32pt'>Gamemaster</span><br/>
+      <td align="center">
+        <span style="font-size:18pt">&nbsp;</span>
+        <span style="font-size:32pt">Gamemaster</span><br>
       </td>
-      <td width='180' align='center' style='color:#000066;font-size:18px'>
-        <i>General<br/>Game<br/>Playing</i>
+      <td width="180" align="center" style="color:#000066;font-size:18px">
+        <i>General<br>Game<br>Playing</i>
       </td>
     </tr>
-  </table>
+  </tbody></table>
 </center>
 
 <!--=======================================================================-->
 
-<br/>
-<table width='640' cellpadding="8" cellspacing="0" border='1'>
-  <tr height='40'>
-     <td align='center'>
-<table style='color:#000066;font-size:18px'>
-  <tr>
+<br>
+<table width="640" cellpadding="8" cellspacing="0" border="1">
+  <tbody><tr height="40">
+     <td align="center">
+<table style="color:#000066;font-size:18px">
+  <tbody><tr>
     <td>
-Protocol: autoplayer<br/>
-Identifier: <span id='player'>minimaxdepth</span> <img src="http://gamemaster.stanford.edu/images/pencil.gif" onclick='doplayer()'/>
+Protocol: autoplayer<br>
+Identifier: <span id="player">mcs</span> <img src="./MCS_files/pencil.gif" onclick="doplayer()">
     </td>
   </tr>
-</table>
+</tbody></table>
     </td>
   </tr>
-</table>
-<br/>
+</tbody></table>
+<br>
 
 <!--=======================================================================-->
 
 <center>
-  <br/>
-  <br/>
-  <input type='button' id='clearer' value='Clear' onclick='doclear()'/>
-  <input type='button' id='connector' value='Connect' onclick='doconnect()'/>
-  <input type='button' id='disconnector' value='Disconnect' disabled onclick='dodisconnect()' disabled/>
-  <br/>
-  <br/>
-  <textarea id='transcript' style='font-family:courier' rows='30' cols='80' readonly></textarea>
+  <br>
+  <br>
+  <input type="button" id="clearer" value="Clear" onclick="doclear()">
+  <input type="button" id="connector" value="Connect" onclick="doconnect()">
+  <input type="button" id="disconnector" value="Disconnect" disabled="" onclick="dodisconnect()">
+  <br>
+  <br>
+  <textarea id="transcript" style="font-family:courier" rows="30" cols="80" readonly=""></textarea>
 </center>
 
 <!--=======================================================================-->
 
         </td>
       </tr>
-    </table>
+    </tbody></table>
   </center>
-</body>
+
 
 <!--=======================================================================-->
 
-</html>
+
+</body><grammarly-desktop-integration data-grammarly-shadow-root="true"></grammarly-desktop-integration></html>
