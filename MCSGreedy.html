@@ -1,0 +1,305 @@
+
+<!-- saved from url=(0058)http://ggp.stanford.edu/gamemaster/autoplayers/greedy.html -->
+<html><!--=======================================================================--><head><meta http-equiv="Content-Type" content="text/html; charset=windows-1252">
+    <title>Greedy</title>
+    <script type="text/javascript" src="./Greedy_files/epilog.js"></script>
+    <script type="text/javascript" src="./Greedy_files/autoplayer.js"></script>
+    <script type="text/javascript">
+  //==============================================================================
+  // Player parameters
+  //==============================================================================
+
+  var player = 'team_rocket_greedy';
+  var manager = 'tester_team_rocket';
+
+  function doplayer ()
+   {player = read(prompt("What is your player's identifier?"));
+    document.getElementById('player').innerHTML = player;
+    return true}
+
+  function domanager ()
+   {manager = read(prompt("What is your manager's identifier?"));
+    document.getElementById('manager').innerHTML = manager;
+    return true}
+
+  //==============================================================================
+  // End of player parameters
+  //==============================================================================
+    </script>
+    <script type="text/javascript">
+  //==============================================================================
+  // Player code goes here
+  //==============================================================================
+
+  function ping ()
+   {return 'ready'}
+
+  function start (r,rs,sc,pc)
+   {role = r;
+    library = definemorerules([],rs.slice(1));
+    roles = findroles(library);
+    state = findinits(library);
+    startclock = sc;
+    playclock = pc;
+    startgreedy(role);
+    return 'ready'}
+
+  function play (move)
+   {if (move!==nil) {state = updategreedy(move)};
+    if (findcontrol(state,library)!==role) {return false};
+    return playgreedy(role)}
+
+  function stop (move)
+   {return false}
+
+  function abort ()
+   {return false}
+
+  //==============================================================================
+  // greedy
+  //==============================================================================
+
+  var tree = {};
+  var expansions = 100;
+
+  function startgreedy (role)
+   {tree = makenode(state,parseInt(findreward(role,state,library)));
+    return 'ready'}
+
+
+  function updategreedy (move)
+   {if (move!=='nil') {tree = updatetree(move,tree)};
+    return tree.state}
+
+  function updatetree (move,tree)
+   {if (tree.children.length===0)
+       {var newstate = simulate(move,tree.state,library);
+        var newscore = parseInt(findreward(role,newstate,library));
+        return makenode(newstate,newscore)};
+    for (var i=0; i<tree.actions.length; i++)
+        {if (equalp(move,tree.actions[i])) {return tree.children[i]}}
+    return tree}
+
+
+  function playgreedy (role)
+   {var deadline = Date.now()+(playclock-3)*1000; console.log(deadline);
+    while (Date.now()<deadline) {process(role, tree, deadline)}; console.log(Date.now());
+    return selectaction(tree)}
+
+  // function playgreedy (role)
+  //  {for (var i=0; i<expansions; i++) {process(role,tree)};
+  //   return selectaction(tree)}
+
+  function process (role,node, deadline)
+   {var newscore = 0;
+    if (findterminalp(node.state,library)) {newscore = node.utility}
+       else if (node.children.length===0) {newscore = expand(role,node, deadline)}
+       else {newscore = process(role,selectstate(node, role), deadline)};
+    node.utility = newscore + node.utility;
+    node.visits = node.visits+1;
+    return node.utility}
+
+  function selectstate (node, role)
+   {var best = node.children[0];
+    var score = best.utility - Math.floor(best.visits*100/node.visits);
+    var active = findcontrol(state,library);
+    for (var i=1; i<node.children.length; i++)
+        {
+         var exploitatiun = node.children[i].utility / node.children[i].visits;
+         var exploration = Math.sqrt(Math.log(node.visits)/node.children[i].visits);
+         var newscore;
+         if (active===role) {
+           newscore = exploitatiun + exploration;
+          } else {
+            newscore = exploitatiun - exploration;
+          }
+         if (newscore>score) {best = node.children[i]; score = newscore}};
+    return best}
+
+  function selectaction (node)
+   {var action = node.actions[0];
+    var score = node.children[0].utility;
+    //console.log(action + ' ' + score);
+    for (var i=1; i<node.children.length; i++)
+        {var newscore = node.children[i].utility;
+         //console.log(node.actions[i] + ' ' + newscore);
+         if (newscore>score) {action = node.actions[i]; score = newscore}};
+    return action}
+
+  function expand(role,node, deadline)
+   {node.actions = findlegals(node.state,library);
+    var score = 0;
+    for (var i=0; i<node.actions.length; i++)
+        {var newstate = simulate(node.actions[i],node.state,library);
+         var newscore = parseInt(montecarlo(role, state, deadline));
+         var newnode = makenode(newstate,newscore);
+         node.children[i]=newnode;
+         if (newscore>score) {score = newscore}};
+    return score}
+
+  function makenode (state,reward)
+   {return {state:state, actions:[], children:[], visits:0, utility:reward}}
+
+   function montecarlo (role, state, deadline)
+   {
+    // Return prematurely if this is the terminal state.
+    if (findterminalp(state,library))
+    {return findreward(role,state,library)*1};
+
+    var total = 0;
+    var count = 100;
+    var i = 0;
+    while (Date.now() < deadline && i < count) {
+      total = total + depthcharge(role, state);
+      i += 1;
+    }
+    if (i == 0) {return 0;}
+    return total/i;}
+
+  function depthcharge (role,state)
+  {if (findterminalp(state,library))
+    {return findreward(role,state,library)*1};
+    var active = findcontrol(state,library);
+    var actions = findlegals(state,library);
+    var best = randomindex(actions.length);
+    var newstate = simulate(actions[best],state,library);
+    return depthcharge(role,newstate)}
+
+  function randomindex (n)
+   {return Math.floor(Math.random()*n)}
+  //==============================================================================
+  // Basics
+  //==============================================================================
+
+  function findroles (rules)
+   {return compfinds('R',seq('role','R'),seq(),rules)}
+
+  function findbases (rules)
+   {return compfinds('P',seq('base','P'),seq(),rules)}
+
+  function findactions (rules)
+   {return compfinds('A',seq('action','A'),seq(),rules)}
+
+  function findinits (rules)
+   {return compfinds('P',seq('init','P'),seq(),rules)}
+
+  function findcontrol (facts,rules)
+   {return compfindx('X',seq('control','X'),facts,rules)}
+
+  function findlegalp (move,facts,rules)
+   {return compfindp(seq('legal',move),facts,rules)}
+
+  function findlegalx (facts,rules)
+   {return compfindx('X',seq('legal','X'),facts,rules)}
+
+  function findlegals (facts,rules)
+   {return compfinds('X',seq('legal','X'),facts,rules)}
+
+  function findreward (role,facts,rules)
+   {var value = compfindx('R',seq('goal',role,'R'),facts,rules);
+    if (value) {return value};
+    return 0}
+
+  function findterminalp (facts,rules)
+   {return compfindp('terminal',facts,rules)}
+
+  //------------------------------------------------------------------------------
+
+  function simulate (move,state,rules)
+   {var deltas = compexpand(move,state,rules);
+    var additions = [];
+    var deletions = [];
+    for (var i=0; i<deltas.length; i++)
+        {if (symbolp(deltas[i])) {additions.push(deltas[i]); continue};
+         if (deltas[i][0]==='not') {deletions.push(deltas[i][1]); continue};
+         additions.push(deltas[i])};
+    var newstate = [];
+    for (i = 0; i<state.length; i++)
+        {if (find(state[i],additions)) {continue};
+         if (find(state[i],deletions)) {continue};
+         newstate.push(state[i])};
+    return newstate.concat(additions)}
+
+  //==============================================================================
+  // End of player code
+  //==============================================================================
+    </script>
+  <script>
+          window.addEventListener("message", async (event) => {
+            if (event.data && event.data.sender === "sabre") {
+              dijit.byId(event.data.target).set("value", event.data.value);
+            }
+          });
+          </script></head>
+
+  <!--=======================================================================-->
+
+  <body bgcolor="#aabbbb" data-new-gr-c-s-check-loaded="14.1058.0" data-gr-ext-installed="" class="vsc-initialized" data-new-gr-c-s-loaded="14.1058.0">
+    <center>
+      <table width="720" cellspacing="0" cellpadding="40" bgcolor="#ffffff">
+        <tbody><tr>
+          <td>
+
+  <!--=======================================================================-->
+
+  <center>
+    <table width="640" cellpadding="0">
+      <tbody><tr>
+        <td width="180" align="center" valign="center">
+          <img width="130" src="./Greedy_files/ggp.jpg">
+        </td>
+        <td align="center">
+          <span style="font-size:18pt">&nbsp;</span>
+          <span style="font-size:32pt">Gamemaster</span><br>
+        </td>
+        <td width="180" align="center" style="color:#000066;font-size:18px">
+          <i>General<br>Game<br>Playing</i>
+        </td>
+      </tr>
+    </tbody></table>
+  </center>
+
+  <!--=======================================================================-->
+
+  <br>
+  <table width="640" cellpadding="8" cellspacing="0" border="1">
+    <tbody><tr height="40">
+       <td align="center">
+  <table style="color:#000066;font-size:18px">
+    <tbody><tr>
+      <td>
+  Protocol: autoplayer<br>
+  Identifier: <span id="player">greedy</span> <img src="./Greedy_files/pencil.gif" onclick="doplayer()">
+      </td>
+    </tr>
+  </tbody></table>
+      </td>
+    </tr>
+  </tbody></table>
+  <br>
+
+  <!--=======================================================================-->
+
+  <center>
+    <br>
+    <br>
+    <input type="button" id="clearer" value="Clear" onclick="doclear()">
+    <input type="button" id="connector" value="Connect" onclick="doconnect()">
+    <input type="button" id="disconnector" value="Disconnect" disabled="" onclick="dodisconnect()">
+    <br>
+    <br>
+    <textarea id="transcript" style="font-family:courier" rows="30" cols="80" readonly=""></textarea>
+  </center>
+
+  <!--=======================================================================-->
+
+          </td>
+        </tr>
+      </tbody></table>
+    </center>
+
+
+  <!--=======================================================================-->
+
+
+  </body><grammarly-desktop-integration data-grammarly-shadow-root="true"></grammarly-desktop-integration></html>
