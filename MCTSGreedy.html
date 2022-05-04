@@ -184,7 +184,11 @@
     var actions = findlegals(state,library);
     var best = randomindex(actions.length);
     var newstate = simulate(actions[best],state,library);
-    return depthcharge(role,newstate)}
+    if (active===role) {
+      return depthcharge(role, newstate);
+    } else {
+      return 100 - depthcharge(role, newstate);
+    }}
 
   function randomindex (n)
    {return Math.floor(Math.random()*n)}
