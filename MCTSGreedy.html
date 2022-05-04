@@ -92,39 +92,57 @@
 
   function process (role,node, deadline)
    {var newscore = 0;
-    if (findterminalp(node.state,library)) {newscore = node.utility / node.visits}
-       else if (node.children.length===0) {newscore = expand(role,node, deadline)}
-       else {newscore = process(role,selectstate(node, role), deadline)};
-    node.utility = newscore + node.utility;
+    if (findterminalp(node.state,library)) {
+        newscore = node.utility / node.visits;
+        // if (newscore > 100) {
+        //    alert("NEW SCORE ABOVE 100 in if")
+        //  }
+      }
+       else if (node.children.length===0) {
+         newscore = expand(role,node, deadline);
+        //  if (newscore > 100) {
+        //    alert("NEW SCORE ABOVE 100 in elseif")
+        //  }
+        }
+       else {
+         newscore = process(role,selectstate(node, role), deadline);
+        //  if (newscore > 100) {
+        //    alert("NEW SCORE ABOVE 100 in else")
+        //  }
+        };
+    node.utility = newscore * 1 + node.utility * 1;
     node.visits = node.visits+1;
-    return node.utility / node.visits}
+    return newscore}
 
   function selectstate (node, role)
    {var best = node.children[0];
-    var score = best.utility - Math.floor(best.visits*100/node.visits);
+    var score = 0;
     var active = findcontrol(state,library);
-    for (var i=1; i<node.children.length; i++)
+    for (var i=0; i<node.children.length; i++)
         {
          var exploitatiun = node.children[i].utility / node.children[i].visits;
          var exploration = Math.sqrt(Math.log(node.visits)/node.children[i].visits);
          var newscore;
          if (active===role) {
-           newscore = exploitatiun + exploration;
+           newscore = exploitatiun + 100 * exploration;
           } else {
-            newscore = exploitatiun - exploration;
+            newscore = exploitatiun - 100 * exploration;
           }
-          console.log("Exploitation score : " + exploitatiun + " Exploration score: " + exploration + "Utility = " + node.children[i].utility);
-          console.log("Actions = " + node.children[i].actions);
+          // newscore = exploitatiun + 100 * exploration;
+          // console.log("Exploitation score : " + exploitatiun + " Exploration score: " + exploration + " Utility = " + node.children[i].utility + " Visits = " + node.children[i].visits);
+          // if (exploitatiun > 500) {alert()}
+          // console.log("Actions = " + node.children[i].actions);
          if (newscore>score) {best = node.children[i]; score = newscore}};
     return best}
 
   function selectaction (node)
    {var action = node.actions[0];
-    var score = node.children[0].utility;
-    //console.log(action + ' ' + score);
+    var score = node.children[0].utility / node.children[0].visits;
+    console.log('###################');
+    console.log(action + ' ' + score);
     for (var i=1; i<node.children.length; i++)
-        {var newscore = node.children[i].utility;
-         //console.log(node.actions[i] + ' ' + newscore);
+        {var newscore = node.children[i].utility / node.children[i].visits;
+         console.log(node.actions[i] + ' ' + newscore);
          if (newscore>score) {action = node.actions[i]; score = newscore}};
     return action}
 
@@ -133,7 +151,7 @@
     var score = 0;
     for (var i=0; i<node.actions.length; i++)
         {var newstate = simulate(node.actions[i],node.state,library);
-         var newscore = parseInt(montecarlo(role, state, deadline));
+         var newscore = parseInt(montecarlo(role, newstate, deadline));
          console.log("Newscore = " + newscore);
          var newnode = makenode(newstate,newscore);
          node.children[i]=newnode;
