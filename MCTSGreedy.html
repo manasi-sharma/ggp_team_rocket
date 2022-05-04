@@ -9,7 +9,7 @@
   // Player parameters
   //==============================================================================
 
-  var player = 'team_rocket_greedy';
+  var player = 'team_rocket_mcts_greedy';
   var manager = 'tester_team_rocket';
 
   function doplayer ()
@@ -92,12 +92,12 @@
 
   function process (role,node, deadline)
    {var newscore = 0;
-    if (findterminalp(node.state,library)) {newscore = node.utility}
+    if (findterminalp(node.state,library)) {newscore = node.utility / node.visits}
        else if (node.children.length===0) {newscore = expand(role,node, deadline)}
        else {newscore = process(role,selectstate(node, role), deadline)};
     node.utility = newscore + node.utility;
     node.visits = node.visits+1;
-    return node.utility}
+    return node.utility / node.visits}
 
   function selectstate (node, role)
    {var best = node.children[0];
@@ -113,6 +113,8 @@
           } else {
             newscore = exploitatiun - exploration;
           }
+          console.log("Exploitation score : " + exploitatiun + " Exploration score: " + exploration + "Utility = " + node.children[i].utility);
+          console.log("Actions = " + node.children[i].actions);
          if (newscore>score) {best = node.children[i]; score = newscore}};
     return best}
 
@@ -132,13 +134,14 @@
     for (var i=0; i<node.actions.length; i++)
         {var newstate = simulate(node.actions[i],node.state,library);
          var newscore = parseInt(montecarlo(role, state, deadline));
+         console.log("Newscore = " + newscore);
          var newnode = makenode(newstate,newscore);
          node.children[i]=newnode;
          if (newscore>score) {score = newscore}};
     return score}
 
   function makenode (state,reward)
-   {return {state:state, actions:[], children:[], visits:0, utility:reward}}
+   {return {state:state, actions:[], children:[], visits:1, utility:reward}}
 
    function montecarlo (role, state, deadline)
    {
