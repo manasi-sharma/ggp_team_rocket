@@ -120,17 +120,17 @@
     var active = findcontrol(state,library);
     for (var i=0; i<node.children.length; i++)
         {
-         var exploitatiun = node.children[i].utility / node.children[i].visits;
+         var exploration = node.children[i].utility / node.children[i].visits;
          var exploration = Math.sqrt(Math.log(node.visits)/node.children[i].visits);
          var newscore;
          if (active===role) {
-           newscore = exploitatiun + 100 * exploration;
+           newscore = exploration + 100 * exploration;
           } else {
-            newscore = exploitatiun - 100 * exploration;
+            newscore = -1 * exploration + 100 * exploration;
           }
-          // newscore = exploitatiun + 100 * exploration;
-          // console.log("Exploitation score : " + exploitatiun + " Exploration score: " + exploration + " Utility = " + node.children[i].utility + " Visits = " + node.children[i].visits);
-          // if (exploitatiun > 500) {alert()}
+          // newscore = exploration + 100 * exploration;
+          // console.log("Exploitation score : " + exploration + " Exploration score: " + exploration + " Utility = " + node.children[i].utility + " Visits = " + node.children[i].visits);
+          // if (exploration > 500) {alert()}
           // console.log("Actions = " + node.children[i].actions);
          if (newscore>score) {best = node.children[i]; score = newscore}};
     return best}
