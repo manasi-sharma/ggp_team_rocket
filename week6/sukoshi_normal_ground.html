@@ -1,0 +1,370 @@
+<html><!--=======================================================================--><head>
+  <title>Minimaxdepth - Buttons and Lights Ground</title>
+  <script type="text/javascript" src="http://epilog.stanford.edu/javascript/epilog.js"></script>
+  <script type="text/javascript" src="http://gamemaster.stanford.edu/javascript/autoplayer.js"></script>
+  <script type='text/javascript' src='http://gamemaster.stanford.edu/gamemaster/javascript/grounder.js'></script> 
+  <script type="text/javascript">
+//==============================================================================
+// Player setup
+//==============================================================================
+
+var player = 'minimaxdepth';
+var manager = 'manager';
+var ruleset = [];
+
+function doread ()
+ {ruleset = readdata(document.getElementById('ruleset').value);
+  if (ruleset.length===0) {alert("Game description empty.")};
+  ruleset = ['ruleset'].concat(ruleset);
+  return true}
+
+function dodepth ()
+ {depth = read(prompt("What depth would you like?"));
+  document.getElementById('depth').innerHTML = depth;
+  return true}
+
+function doping ()
+ {document.getElementById('transcript').value = ping();
+  return true}
+
+function dostart ()
+ {var result = start('robot',ruleset,Infinity,Infinity);
+  document.getElementById('transcript').value = result;
+  return true}
+
+function dotest ()
+ {var result = "Result:    " + testminimaxdepth('robot',state) + "\r";
+  result += "Terminals: " + terminals + "\r";
+  result += "Nodes:     " + nodes + "\r";
+  result += "Elapsed:   " + elapsed + "\r";
+  document.getElementById('transcript').value = result;
+  return true}
+
+//==============================================================================
+// End of player parameters
+//==============================================================================
+  </script>
+  <script type="text/javascript">
+//==============================================================================
+// Player code goes here
+//==============================================================================
+
+function ping ()
+ {return 'ready'}
+
+function start (r,rs,sc,pc)
+ {role = r;
+  library = definemorerules([],rs.slice(1));
+  library = definemorerules([], groundrules(library));
+  roles = findroles(library);
+  state = findinits(library);
+  startclock = sc;
+  playclock = pc;
+  return 'ready'}
+
+function play (move)
+ {if (move!==nil) {compexecute(move,state,library)};
+  if (findcontrol(state,library)!==role) {return false};
+  return playminimaxdepth(role)}
+
+function stop (move)
+ {return false}
+
+function abort ()
+ {return false}
+
+//==============================================================================
+// minimaxdepth
+//==============================================================================
+
+var depth = 6;
+var nodes = 0;
+var terminals = 0;
+var elapsed = 0;
+
+function playminimaxdepth (role)
+ {var actions = shuffle(findlegals(state,library));
+  if (actions.length===0) {return false};
+  if (actions.length===1) {return actions[0]};
+  var action = actions[0];
+  var score = 0;
+  nodes = 0
+  for (var i=0; i<actions.length; i++)
+      {//console.log(grind(actions[i]));
+       var newstate = simulate(actions[i],state,library);
+       var newscore = minimaxdepth(role,newstate,depth);
+       //console.log(newscore);
+       if (newscore===100) {return actions[i]};
+       if (newscore>score) {action = actions[i]; score = newscore}};
+  return action}
+
+function testminimaxdepth (role,state)
+ {nodes = 0;
+  terminals = 0;
+  var beg = performance.now();
+  var result = minimaxdepth(role,state,depth);
+  var end = performance.now();
+  elapsed = Math.round(end-beg);
+  return result}
+
+function minimaxdepth (role,state,depth)
+ {nodes = nodes + 1;
+  if (findterminalp(state,library))
+     {terminals = terminals + 1; return findreward(role,state,library)*1};
+  if (depth<=0) {terminals = terminals + 1; return findreward(role,state,library)};
+  var active = findcontrol(state,library);
+  if (active===role) {return maximizedepth(active,role,state,depth)};
+  return minimizedepth(active,role,state,depth)}
+
+function maximizedepth (active,role,state,depth)
+ {var actions = findlegals(state,library);
+  if (actions.length===0) {return 0};
+  var score = 0;
+  for (var i=0; i<actions.length; i++)
+      {var newstate = simulate(actions[i],state,library);
+       var newscore = minimaxdepth(role,newstate,depth-1);
+       //if (newscore===100) {return 100};
+       if (newscore>score) {score = newscore}};
+  return score}
+
+function minimizedepth (active,role,state,depth)
+ {var actions = findlegals(state,library);
+  if (actions.length===0) {return 0};
+  var score = 100;
+  for (var i=0; i<actions.length; i++)
+      {var newstate = simulate(actions[i],state,library);
+       var newscore = minimaxdepth(role,newstate,depth-1);
+       //if (newscore===0) {return 0};
+       if (newscore<score) {score = newscore}};
+  return score}
+
+function betterp (x,y)
+ {if (x[0]>y[0]) {return true};
+  if (x[0]===y[0]) {return (x[1]>y[1])};
+  return false}
+
+function worsep (x,y)
+ {if (x[0]<y[0]) {return true};
+  if (x[0]===y[0]) {return (x[1]<y[1])};
+  return false}
+
+function shuffle (array)
+ {for (var i = array.length-1; i>0; i--)
+      {var j = Math.floor(Math.random() * (i + 1));
+       var temp = array[i];
+       array[i] = array[j];
+       array[j] = temp};
+  return array}
+
+//==============================================================================
+// Basics
+//==============================================================================
+
+function findroles (rules)
+ {return compfinds('R',seq('role','R'),seq(),rules)}
+
+function findbases (rules)
+ {return compfinds('P',seq('base','P'),seq(),rules)}
+
+function findactions (rules)
+ {return compfinds('A',seq('action','A'),seq(),rules)}
+
+function findinits (rules)
+ {return compfinds('P',seq('init','P'),seq(),rules)}
+
+function findcontrol (facts,rules)
+ {return compfindx('X',seq('control','X'),facts,rules)}
+
+function findlegalp (move,facts,rules)
+ {return compfindp(seq('legal',move),facts,rules)}
+
+function findlegalx (facts,rules)
+ {return compfindx('X',seq('legal','X'),facts,rules)}
+
+function findlegals (facts,rules)
+ {return compfinds('X',seq('legal','X'),facts,rules)}
+
+function findreward (role,facts,rules)
+ {var value = compfindx('R',seq('goal',role,'R'),facts,rules);
+  if (value) {return value};
+  return 0}
+
+function findterminalp (facts,rules)
+ {return compfindp('terminal',facts,rules)}
+
+//------------------------------------------------------------------------------
+
+function simulate (move,state,rules)
+ {var deltas = compexpand(move,state,rules);
+  var additions = [];
+  var deletions = [];
+  for (var i=0; i<deltas.length; i++)
+      {if (symbolp(deltas[i])) {additions.push(deltas[i]); continue};
+       if (deltas[i][0]==='not') {deletions.push(deltas[i][1]); continue};
+       additions.push(deltas[i])};
+  var newstate = [];
+  for (i = 0; i<state.length; i++)
+      {if (find(state[i],additions)) {continue};
+       if (find(state[i],deletions)) {continue};
+       newstate.push(state[i])};
+  return newstate.concat(additions)}
+
+//==============================================================================
+// End of player code
+//==============================================================================
+  </script>
+</head>
+
+<!--=======================================================================-->
+
+<body onload="doread()" bgcolor="#aabbbb">
+  <center>
+    <table width="720" cellspacing="0" cellpadding="40" bgcolor="#ffffff">
+      <tbody><tr>
+        <td>
+
+<!--=======================================================================-->
+
+<center>
+  <table width="640" cellpadding="0">
+    <tbody><tr>
+      <td width="180" valign="center" align="center">
+        <img src="/gamemaster/images/ggp.jpg" width="130">
+      </td>
+      <td align="center">
+        <span style="font-size:18pt">&nbsp;</span>
+        <span style="font-size:32pt">Gamemaster</span><br>
+      </td>
+      <td style="color:#000066;font-size:18px" width="180" align="center">
+        <i>General<br>Game<br>Playing</i>
+      </td>
+    </tr>
+  </tbody></table>
+</center>
+
+<!--=======================================================================-->
+
+<br>
+<table width="640" cellspacing="0" cellpadding="8" border="1">
+  <tbody><tr height="40">
+     <td align="center">
+<table style="color:#000066;font-size:18px">
+  <tbody><tr>
+    <td>
+Protocol: tester<br>
+Player: minimaxdepth<br>
+Depth: <span id="depth">6</span> <img src="http://gamemaster.stanford.edu/images/pencil.gif" onclick="dodepth()"><br>
+Game: buttonsandlightsground
+    </td>
+  </tr>
+</tbody></table>
+    </td>
+  </tr>
+</tbody></table>
+<br>
+
+<!--=======================================================================-->
+
+<center>
+  <br>
+  <br>
+<textarea id="transcript" style="font-family:courier" rows="10" cols="80"></textarea>
+  <br>
+  <br>
+  <input type="button" id="pinger" value="Ping" onclick="doping()">
+  <input type="button" id="starter" value="Start" onclick="dostart()">
+  <input type="button" id="tester" value="Test" onclick="dotest()">
+  <br>
+  <br>
+</center>
+
+<!--=======================================================================-->
+
+<textarea id="ruleset" style="font-family:courier;display:none" rows="10" cols="80">%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%% sukoshi
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%% metadata
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+role(robot)
+
+base(cell(M,N,X)) :- index(M) & index(N) & filler(X)
+
+action(mark(M,N,X)) :- index(M) & index(N) & index(X)
+
+filler(X) :- index(X)
+filler(b)
+
+index(1)
+index(2)
+index(3)
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%% init
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+init(cell(1,1,b))
+init(cell(1,2,1))
+init(cell(1,3,b))
+init(cell(2,1,2))
+init(cell(2,2,b))
+init(cell(2,3,b))
+init(cell(3,1,b))
+init(cell(3,2,b))
+init(cell(3,3,b))
+init(control(robot))
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%% legal
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+legal(mark(M,N,X)) :- cell(M,N,b) & index(X) & ~row(M,X) & ~col(N,X)
+
+row(M,X) :- cell(M,1,X)
+row(M,X) :- cell(M,2,X)
+row(M,X) :- cell(M,3,X)
+
+col(N,X) :- cell(1,N,X)
+col(N,X) :- cell(2,N,X)
+col(N,X) :- cell(3,N,X)
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%% operations
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+mark(M,N,X) :: ~cell(M,N,b) & cell(M,N,X)
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%% goal
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+goal(robot,100) :- ~open
+open :- cell(M,N,b)
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%% terminal
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+terminal :- ~playable
+playable :- legal(mark(M,N,X))
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+
+  </textarea>
+
+<!--=======================================================================-->
+
+        </td>
+      </tr>
+    </tbody></table>
+  </center>
+
+
+
+
+
+</body><!--=======================================================================--></html>
