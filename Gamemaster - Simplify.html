@@ -1,0 +1,148 @@
+
+<!-- saved from url=(0056)http://ggp.stanford.edu/gamemaster/homepage/simplify.php -->
+<html><head><meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+    <title>Gamemaster - Simplify</title>
+    <script type="text/javascript" src="./Gamemaster - Simplify_files/epilog.js"></script>
+    <script type="text/javascript" src="./Gamemaster - Simplify_files/ground.js"></script>
+    <script type="text/javascript" src="./Gamemaster - Simplify_files/factor.js"></script>
+    <script type='text/javascript' src='http://ggp.stanford.edu/gamemaster/javascript/grounder.js'></script>
+    <script type="text/javascript">
+//==============================================================================
+// factor code
+//==============================================================================
+
+var library;
+dataindexing = false
+ruleindexing = true
+
+function initialize ()
+ {library = readdata(document.getElementById('input').value)}
+
+//==============================================================================
+// dochangers
+//==============================================================================
+
+function dochangers ()
+ {var input = document.getElementById('input');
+  var output = document.getElementById('output');
+  var library = definemorerules([],readdata(input.value));
+  var grounds = groundrules(library);
+  var actions = compchangers(read('goal(robot,100) & terminal'),[],grounds);
+  var result = grindem(actions.sort());
+  output.value = result;
+  return true}
+
+//==============================================================================
+// dochangers
+//==============================================================================
+
+function dosimplify ()
+ {var input = document.getElementById('input');
+  var output = document.getElementById('output');
+  var library = definemorerules([],readdata(input.value));
+  var grounds = groundrules(library);
+  var actions = compchangers(read('goal(robot,100) & terminal'),[],grounds);
+  var newrules = adjustlegalities(actions,library,grounds)
+  var result = grindem(newrules);
+  output.value = result;
+  return true}
+
+function adjustlegalities (actions,oldrules,newrules)
+ {var oldlegals = indexees('legal',oldrules);
+  var newlegals = getlegalities(actions,newrules);
+  return difference(oldrules,oldlegals).concat(newlegals)}
+
+function getlegalities (actions,rules)
+ {var legals = [];
+  for (var i=0; i<rules.length; i++)
+      {var head = rulehead(rules[i]);
+       if (!symbolp(head) & head[0]==='legal' && findp(head[1],actions))
+       legals.push(rules[i])};
+  return legals}
+
+//==============================================================================
+// End
+//==============================================================================
+    </script>
+<script>
+        window.addEventListener("message", async (event) => {
+          if (event.data && event.data.sender === "sabre") {
+            dijit.byId(event.data.target).set("value", event.data.value);
+          }
+        });
+        </script></head>
+
+<!--=======================================================================-->
+
+<body bgcolor="#aabbbb" class="vsc-initialized" data-new-gr-c-s-check-loaded="14.1061.0" data-gr-ext-installed="">
+  <center>
+    <table width="720" cellspacing="0" cellpadding="40" bgcolor="#ffffff">
+      <tbody><tr>
+        <td>
+
+<!--=======================================================================-->
+
+<center>
+  <table width="640" cellpadding="0">
+    <tbody><tr>
+      <td width="180" align="center" valign="center">
+        <img width="130" src="./Gamemaster - Simplify_files/ggp.jpg">
+      </td>
+      <td align="center">
+        <span style="font-size:18pt">&nbsp;</span>
+        <span style="font-size:32pt">Gamemaster</span><br>
+      </td>
+      <td width="180" align="center" style="color:#000066;font-size:18px">
+        <i>General<br>Game<br>Playing</i>
+      </td>
+    </tr>
+  </tbody></table>
+</center>
+
+<!--=======================================================================-->
+
+<center>
+  <br>
+  <table width="640" cellpadding="0" cellspacing="0" bgcolor="#e4eaea" border="1">
+    <tbody><tr height="48">
+      <td align="center" style="font-size:24px;color:#000066">Simplify</td>
+    </tr>
+  </tbody></table>
+  <br>
+</center>
+
+<!--=======================================================================-->
+
+<center>
+  <table>
+    <tbody><tr>
+      <td>
+Game Description:<br>
+<textarea id="input" rows="18" cols="80" wrap="soft" style="font-family:courier;font-size:12px"></textarea>
+<br>
+<br>
+<center>
+<input type="button" value="Actions" onclick="dochangers()">
+<input type="button" value="Rules" onclick="dosimplify()">
+</center>
+<br>
+Result:<br>
+<textarea id="output" rows="18" cols="80" wrap="soft" style="font-family:courier; font-size:12px" disabled="true"></textarea>
+<br>
+      </td>
+    </tr>
+  </tbody></table>
+</center>
+
+<!--=======================================================================-->
+
+        </td>
+      </tr>
+    </tbody></table>
+  </center>
+
+
+<!--=======================================================================-->
+
+
+</body><grammarly-desktop-integration data-grammarly-shadow-root="true"></grammarly-desktop-integration></html>

@@ -120,13 +120,13 @@
     var active = findcontrol(state,library);
     for (var i=0; i<node.children.length; i++)
         {
-         var exploration = node.children[i].utility / node.children[i].visits;
+         var exploitation = node.children[i].utility / node.children[i].visits;
          var exploration = Math.sqrt(Math.log(node.visits)/node.children[i].visits);
          var newscore;
          if (active===role) {
-           newscore = exploration + 100 * exploration;
+           newscore = exploitation + 10 * exploration;
           } else {
-            newscore = -1 * exploration + 100 * exploration;
+            newscore = -1 * exploitation + 10 * exploration;
           }
           // newscore = exploration + 100 * exploration;
           // console.log("Exploitation score : " + exploration + " Exploration score: " + exploration + " Utility = " + node.children[i].utility + " Visits = " + node.children[i].visits);
@@ -168,7 +168,7 @@
     {return findreward(role,state,library)*1};
 
     var total = 0;
-    var count = 100;
+    var count = 20;
     var i = 0;
     while (Date.now() < deadline && i < count) {
       total = total + depthcharge(role, state);
