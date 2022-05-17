@@ -1,10 +1,11 @@
 
 <html><!--=======================================================================--><head>
   <title>Greedy</title>
-  <script type="text/javascript" src="http://epilog.stanford.edu/javascript/epilog.js"></script>
+  <script type="text/javascript" src="./simplifyFiles/epilog.js"></script>
+  <script type="text/javascript" src="./simplifyFiles/ground.js"></script>
+  <script type="text/javascript" src="./simplifyFiles/factor.js"></script>
   <script type="text/javascript" src="http://gamemaster.stanford.edu/javascript/autoplayer.js"></script>
   <script type='text/javascript' src='http://gamemaster.stanford.edu/gamemaster/javascript/grounder.js'></script>
-  <script type="text/javascript" src="http://gamemaster.stanford.edu/gamemaster/javascript/factor.js"></script>
   <script type="text/javascript"> 
   //==============================================================================
   // Player parameters
@@ -67,7 +68,8 @@
     var actions = compchangers(read('goal(robot,100) & terminal'),[],grounds);
     var newrules = adjustlegalities(actions,library,grounds)
     var result = grindem(newrules);
-    return result}
+    console.log(result);
+    return newrules}
 
   function adjustlegalities (actions,oldrules,newrules)
   {var oldlegals = indexees('legal',oldrules);
