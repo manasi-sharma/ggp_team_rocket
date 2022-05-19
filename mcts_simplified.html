@@ -2,7 +2,6 @@
 <html><!--=======================================================================--><head>
   <title>Greedy</title>
   <script type="text/javascript" src="./simplifyFiles/epilog.js"></script>
-  <script type="text/javascript" src="./simplifyFiles/ground.js"></script>
   <script type="text/javascript" src="./simplifyFiles/factor.js"></script>
   <script type="text/javascript" src="http://gamemaster.stanford.edu/javascript/autoplayer.js"></script>
   <script type='text/javascript' src='http://gamemaster.stanford.edu/gamemaster/javascript/grounder.js'></script>
@@ -12,7 +11,7 @@
   //==============================================================================
 
   var player = 'team_rocket_mcts_greedy';
-  var manager = 'tester_team_rocket';
+  var manager = 'manager';
 
   function doplayer ()
    {player = read(prompt("What is your player's identifier?"));
@@ -39,7 +38,7 @@
   function start (r,rs,sc,pc)
    {role = r;
     library = definemorerules([],rs.slice(1));
-    library = definemorerules([], dosimplify(library));
+    library = definemorerules([], groundrules(library));
     roles = findroles(library);
     state = findinits(library);
     startclock = sc;
@@ -62,10 +61,10 @@
   // dochangers
   //==============================================================================
 
-  function dosimplify (library)
+  function dosimplify (library, role)
   {
     var grounds = groundrules(library);
-    var actions = compchangers(read('goal(robot,100) & terminal'),[],grounds);
+    var actions = compchangers(read('goal(' + role + ',100) & terminal'),[],grounds);
     var newrules = adjustlegalities(actions,library,grounds)
     var result = grindem(newrules);
     console.log(result);
@@ -156,9 +155,9 @@
          var exploration = Math.sqrt(Math.log(node.visits)/node.children[i].visits);
          var newscore;
          if (active===role) {
-           newscore = exploitation + 100 * exploration;
+           newscore = exploitation + 5 * exploration;
           } else {
-            newscore = -1 * exploitation + 100 * exploration;
+            newscore = -1 * exploitation + 5 * exploration;
           }
           // newscore = exploration + 100 * exploration;
           // console.log("Exploitation score : " + exploration + " Exploration score: " + exploration + " Utility = " + node.children[i].utility + " Visits = " + node.children[i].visits);
@@ -225,7 +224,7 @@
     if (active===role) {
       return depthcharge(role, newstate, limit-1);
     } else {
-      return 100-depthcharge(role, newstate, limit-1);
+      return depthcharge(role, newstate, limit-1);
     }}
 
   function randomindex (n)
