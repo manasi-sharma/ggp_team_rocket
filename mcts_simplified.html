@@ -2,7 +2,8 @@
 <html><!--=======================================================================--><head>
   <title>Greedy</title>
   <script type="text/javascript" src="./simplifyFiles/epilog.js"></script>
-  <script type="text/javascript" src="./simplifyFiles/factor.js"></script>
+  <!-- <script type="text/javascript" src="./simplifyFiles/factor.js"></script> -->
+  <script type="text/javascript" src="http://ggp.stanford.edu/gamemaster/javascript/prune.js"></script>
   <script type="text/javascript" src="http://gamemaster.stanford.edu/javascript/autoplayer.js"></script>
   <script type='text/javascript' src='http://gamemaster.stanford.edu/gamemaster/javascript/grounder.js'></script>
   <script type="text/javascript"> 
@@ -11,7 +12,7 @@
   //==============================================================================
 
   var player = 'team_rocket_mcts_greedy';
-  var manager = 'manager';
+  var manager = 'team_rocket';
 
   function doplayer ()
    {player = read(prompt("What is your player's identifier?"));
@@ -38,7 +39,7 @@
   function start (r,rs,sc,pc)
    {role = r;
     library = definemorerules([],rs.slice(1));
-    library = definemorerules([], groundrules(library));
+    library = definemorerules([], doprune(library));
     roles = findroles(library);
     state = findinits(library);
     startclock = sc;
@@ -70,6 +71,21 @@
     console.log(result);
     return newrules}
 
+  function doprune (library, role)
+ {
+  var roles = compfinds('R',seq('role','R'),[],library);
+  var grounds = groundrules(library);
+  var props = getgoalprops (roles[0],grounds);
+  var actions = [];
+  for (var i=0; i<props.length; i++)
+      {actions = compchangers(props[i],actions,grounds)};
+  var actions = compchangers('terminal',actions,grounds);
+  for (var i=0; i<actions.length; i++)
+      {actions = compchangers(seq('legal',actions[i]),actions,grounds)};
+  var newrules = adjustlegalities(actions,library,grounds);
+  var result = grindem(newrules);
+  return newrules}
+
   function adjustlegalities (actions,oldrules,newrules)
   {var oldlegals = indexees('legal',oldrules);
     var newlegals = getlegalities(actions,newrules);
@@ -82,6 +98,15 @@
         if (!symbolp(head) & head[0]==='legal' && findp(head[1],actions))
         legals.push(rules[i])};
     return legals}
+  
+  function getgoalprops (role,grounds)
+ {var props = [];
+  for (var i=0; i<grounds.length; i++)
+      {if (symbolp(grounds[i])) {continue};
+       if (symbolp(grounds[i][1])) {continue};
+       if (grounds[i][1][0]==='goal' && grounds[i][1][1]===role)
+          {props = adjoinit(grounds[i][1],props)}}
+  return props}
 
   //==============================================================================
   // End

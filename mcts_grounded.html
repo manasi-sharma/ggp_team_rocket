@@ -193,7 +193,7 @@
     if (active===role) {
       return depthcharge(role, newstate, limit-1);
     } else {
-      return 100-depthcharge(role, newstate, limit-1);
+      return depthcharge(role, newstate, limit-1);
     }}
 
   function randomindex (n)
