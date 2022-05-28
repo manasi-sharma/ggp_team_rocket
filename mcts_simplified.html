@@ -1,8 +1,7 @@
 
 <html><!--=======================================================================--><head>
   <title>Greedy</title>
-  <script type="text/javascript" src="./simplifyFiles/epilog.js"></script>
-  <!-- <script type="text/javascript" src="./simplifyFiles/factor.js"></script> -->
+  <script type="text/javascript" src="http://epilog.stanford.edu/javascript/epilog.js"></script>
   <script type="text/javascript" src="http://ggp.stanford.edu/gamemaster/javascript/prune.js"></script>
   <script type="text/javascript" src="http://gamemaster.stanford.edu/javascript/autoplayer.js"></script>
   <script type='text/javascript' src='http://gamemaster.stanford.edu/gamemaster/javascript/grounder.js'></script>
@@ -40,15 +39,18 @@
    {role = r;
     library = definemorerules([],rs.slice(1));
     library = definemorerules([], doprune(library));
+    // library = definemorerules([], groundrules(library));
     roles = findroles(library);
     state = findinits(library);
     startclock = sc;
     playclock = pc;
     startgreedy(role);
+    console.log(state);
     return 'ready'}
 
   function play (move)
    {if (move!==nil) {state = updategreedy(move)};
+    console.log(state);
     if (findcontrol(state,library)!==role) {return false};
     return playgreedy(role)}
 
@@ -75,6 +77,7 @@
  {
   var roles = compfinds('R',seq('role','R'),[],library);
   var grounds = groundrules(library);
+  var grounds_original = JSON.parse(JSON.stringify(grounds));
   var props = getgoalprops (roles[0],grounds);
   var actions = [];
   for (var i=0; i<props.length; i++)
@@ -82,7 +85,7 @@
   var actions = compchangers('terminal',actions,grounds);
   for (var i=0; i<actions.length; i++)
       {actions = compchangers(seq('legal',actions[i]),actions,grounds)};
-  var newrules = adjustlegalities(actions,library,grounds);
+  var newrules = adjustlegalities(actions,grounds_original,grounds);
   var result = grindem(newrules);
   return newrules}
 
@@ -254,6 +257,8 @@
 
   function randomindex (n)
    {return Math.floor(Math.random()*n)}
+
+
 
 //==============================================================================
 // ground.js
