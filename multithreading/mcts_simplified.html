@@ -13,10 +13,11 @@
 
   var player = 'team_rocket';
   var manager = 'team_rocket';
-  var num_workers = 2;
+  var num_workers = 10; // Number of depth charges to be done synchronously
+  var count = 5; // Total number of depth charges / workers
   var worker_instances = [];
   var worker_outputs = [];
-  const sharedArrayBuffer = new SharedArrayBuffer(Int32Array.BYTES_PER_ELEMENT * 3);
+  const sharedArrayBuffer = new SharedArrayBuffer(Int32Array.BYTES_PER_ELEMENT * num_workers);
   const sharedArr = new Int32Array(sharedArrayBuffer);
 
   function doplayer ()
@@ -244,7 +245,6 @@
     {return findreward(role,state,library)*1};
 
     var total = 0;
-    var count = 5;
     var i = 0;
     while (Date.now() < deadline && (i < count)) {
       
@@ -272,8 +272,10 @@
         }
       }
 
+
       total = total + depthchargetotal;
-      console.log("depthcharge total:"+total);
+      // console.log(sharedArr);
+      // console.log("depthcharge total:"+total);
       i += num_workers;
 
     }
