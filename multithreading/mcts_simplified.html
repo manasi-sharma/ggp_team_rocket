@@ -58,8 +58,8 @@
       worker_outputs.push(-1);
       worker_instances.push(new Worker('depthcharger_worker.js'));
       worker_instances[i].addEventListener('message', function(e) {
-          console.log("DATA COMING BACK");
-          console.log('worker data: ', e.data);
+          // console.log("DATA COMING BACK");
+          // console.log('worker data: ', e.data);
       }, false);
     }
     //
@@ -244,13 +244,13 @@
     {return findreward(role,state,library)*1};
 
     var total = 0;
-    var count = 10;
+    var count = 5;
     var i = 0;
     while (Date.now() < deadline && (i < count)) {
       
       // Call all workers to do a depth charge
       for (var i = 0; i < num_workers; i++) {
-        console.log("CALLING WORKER " + i);
+        // console.log("CALLING WORKER " + i);
         sharedArr[i] = -1;
         worker_instances[i].postMessage([role, state, 200, i, library, sharedArr]);
       }

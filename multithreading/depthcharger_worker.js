@@ -5076,7 +5076,7 @@ function getrelations (datum,rs)
   var depthchargereward = 0;  
   var doDepthCharge = function (role,state,limit,library)
     { 
-      console.log("WORKER " + e.data[3] + " called");
+    //   console.log("WORKER " + e.data[3] + " called");
       // console.log("DATA = " + e.data);
       if (findterminalp(state,library))
       { 
@@ -5098,7 +5098,7 @@ function getrelations (datum,rs)
     };
 
   doDepthCharge(e.data[0], e.data[1], e.data[2], e.data[4]);
-  console.log("DEPTH CHARGE WORKER RESULT = " + depthchargereward);
+//   console.log("DEPTH CHARGE WORKER RESULT = " + depthchargereward);
   let ans = depthchargereward;
   const arr = e.data[5];
   arr[e.data[3]] = ans;
