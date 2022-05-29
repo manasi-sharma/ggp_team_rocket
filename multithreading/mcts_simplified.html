@@ -11,19 +11,17 @@
   // Player parameters
   //==============================================================================
 
-  var player = 'team_rocket_mcts_greedy';
+  var player = 'team_rocket';
   var manager = 'team_rocket';
   var num_workers = 2;
   var worker_instances = [];
-  var worker_outputs = []
-  for (var i=0; i<num_workers; i++){
-    worker_outputs.push(-1);
-    var curr_worker = new Worker('depthcharger_worker.js');
-    curr_worker.addEventListener('message', function(e) {
-      worker_outputs[e.data[1]] = e.data[0]
-    }, false);
-    worker_instances.push(curr_worker);
-  }
+  var worker_outputs = [];
+  const sharedArrayBuffer = new SharedArrayBuffer(Int32Array.BYTES_PER_ELEMENT * 3);
+  const arr = new Int32Array(sharedArrayBuffer)
+
+  // for (var i=0; i<num_workers; i++){
+  //   worker_instances[i].postMessage(0);
+  // }
 
   function doplayer ()
    {player = read(prompt("What is your player's identifier?"));
@@ -58,6 +56,17 @@
     playclock = pc;
     startgreedy(role);
     console.log(state);
+
+    // Defining workers
+    for (var i=0; i<num_workers; i++){
+      worker_outputs.push(-1);
+      worker_instances.push(new Worker('queenWorker.js'));
+      worker_instances[i].addEventListener('message', function(e) {
+          console.log("DATA COMING BACK");
+          console.log('worker data: ', e.data);
+      }, false);
+    }
+    //
     return 'ready'}
 
   function play (move)
@@ -242,17 +251,26 @@
     var count = 10;
     var i = 0;
     while (Date.now() < deadline && (i < count)) {
-
+      
       // Call all workers to do a depth charge
       for (var i = 0; i < num_workers; i++) {
+        console.log("CALLING WORKER " + i);
         worker_outputs[i] = -1;
-        worker_instances[i].postMessage([role, state, 200, i]);
+        // worker_instances[i] = new Worker('queenWorker.js');
+        // worker_instances[i].addEventListener('message', function(e) {
+        //   console.log("DATA COMING BACK");
+        //   console.log('worker data: ', e.data);
+        // }, false);
+        worker_instances[i].postMessage([role, state, 200, i, library, sharedArr]);
+        // worker_instances[i].postMessage({ arr });
       }
+      
       let done = false;
       let depthchargetotal = 0;
-
       // Wait for them to finish
       while (!done) {
+        console.log(arr);
+        // console.log(worker_outputs);
         done = true;
         depthchargetotal = 0;
         for (var i = 0; i < num_workers; i++) {
@@ -263,7 +281,7 @@
           }
         }
       }
-      
+
       total = total + depthchargetotal;
       console.log("depthcharge total:"+total);
       i += num_workers;
@@ -609,7 +627,7 @@ function ruleindex (x,p,theory)
     <tbody><tr>
       <td>
   Protocol: autoplayer<br>
-  Identifier: <span id="player">greedy</span> <img src="./Greedy_files/pencil.gif" onclick="doplayer()">
+  Identifier: <span id="player">team_rocket</span> <img src="./Greedy_files/pencil.gif" onclick="doplayer()">
       </td>
     </tr>
   </tbody></table>
