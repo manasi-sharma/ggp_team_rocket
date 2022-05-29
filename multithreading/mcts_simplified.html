@@ -17,11 +17,7 @@
   var worker_instances = [];
   var worker_outputs = [];
   const sharedArrayBuffer = new SharedArrayBuffer(Int32Array.BYTES_PER_ELEMENT * 3);
-  const arr = new Int32Array(sharedArrayBuffer)
-
-  // for (var i=0; i<num_workers; i++){
-  //   worker_instances[i].postMessage(0);
-  // }
+  const sharedArr = new Int32Array(sharedArrayBuffer);
 
   function doplayer ()
    {player = read(prompt("What is your player's identifier?"));
@@ -60,7 +56,7 @@
     // Defining workers
     for (var i=0; i<num_workers; i++){
       worker_outputs.push(-1);
-      worker_instances.push(new Worker('queenWorker.js'));
+      worker_instances.push(new Worker('depthcharger_worker.js'));
       worker_instances[i].addEventListener('message', function(e) {
           console.log("DATA COMING BACK");
           console.log('worker data: ', e.data);
@@ -255,29 +251,23 @@
       // Call all workers to do a depth charge
       for (var i = 0; i < num_workers; i++) {
         console.log("CALLING WORKER " + i);
-        worker_outputs[i] = -1;
-        // worker_instances[i] = new Worker('queenWorker.js');
-        // worker_instances[i].addEventListener('message', function(e) {
-        //   console.log("DATA COMING BACK");
-        //   console.log('worker data: ', e.data);
-        // }, false);
+        sharedArr[i] = -1;
         worker_instances[i].postMessage([role, state, 200, i, library, sharedArr]);
-        // worker_instances[i].postMessage({ arr });
       }
       
       let done = false;
       let depthchargetotal = 0;
       // Wait for them to finish
       while (!done) {
-        console.log(arr);
+        // console.log(sharedArr);
         // console.log(worker_outputs);
         done = true;
         depthchargetotal = 0;
         for (var i = 0; i < num_workers; i++) {
-          if (worker_outputs[i] == -1) {
+          if (sharedArr[i] == -1) {
             done = false;
           } else {
-            depthchargetotal += worker_outputs[i];
+            depthchargetotal += sharedArr[i];
           }
         }
       }

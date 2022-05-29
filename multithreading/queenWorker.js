@@ -17,7 +17,8 @@ self.addEventListener('message', function(e) {
     // findSolutions(e.data[0], e.data[1], e.data[2], e.data[3]);
     console.log("QUEEN MAING ARRAY");
     console.log("QUEEN RETURNING");
-    const { arr } = e;
+    console.log(e.data);
+    const arr = e.data;
     arr[0] = 100;
     arr[1] = 100;
     console.log("QUEEN RETURNING AFTER");

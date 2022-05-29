@@ -11,6 +11,8 @@
   var num = parseInt(prompt("enter num"));
   var all = (1 << num) - 1;
   var worker_instances = [];
+  const sharedArrayBuffer = new SharedArrayBuffer(Int32Array.BYTES_PER_ELEMENT * 3);
+  const arr = new Int32Array(sharedArrayBuffer)
   count = 0;
   for (var i = 0; i < num; i++) {
     worker_instances.push(new Worker('queenWorker.js'));
@@ -27,7 +29,8 @@
     if (i > 0) {
       rd = 2 ** (i - 1);
     }
-    worker_instances[i].postMessage([ld, cols, rd, all]);
+    // worker_instances[i].postMessage([ld, cols, rd, all, arr, arr]);
+    worker_instances[i].postMessage(arr);
   }
   
   </script>
