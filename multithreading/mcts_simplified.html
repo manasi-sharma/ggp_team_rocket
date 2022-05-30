@@ -13,12 +13,12 @@
 
   var player = 'team_rocket';
   var manager = 'team_rocket';
-  var num_workers = 10; // Number of depth charges to be done simultaneously
+  var num_workers = 100; // Number of depth charges to be done simultaneously
   var count = 5; // Total number of depth charges / workers
   var worker_instances = [];
   var worker_outputs = [];
   const sharedArrayBuffer = new SharedArrayBuffer(Int32Array.BYTES_PER_ELEMENT * num_workers);
-  const sharedArr = new Int32Array(sharedArrayBuffer);
+  const sharedArr = new Int32Array(sharedArrayBuffer);  
 
   function doplayer ()
    {player = read(prompt("What is your player's identifier?"));
@@ -280,6 +280,7 @@
 
     }
     if (Date.now() < deadline && (i==0)) {return 0;}
+    console.log("TOTAL DEPTH CHARGES = " + i);
     return total/i;}
 
   function depthcharge (role,state, limit)
