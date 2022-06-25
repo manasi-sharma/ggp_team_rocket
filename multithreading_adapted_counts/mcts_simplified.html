@@ -13,7 +13,7 @@
 
   var player = 'team_rocket';
   var manager = 'team_rocket';
-  var num_workers = 100; // Number of depth charges to be done simultaneously
+  var num_workers = 10; // Number of depth charges to be done simultaneously
   var count = 5; // Total number of depth charges / workers
   var max_depthcharge = 500;
   var worker_instances = [];
@@ -233,7 +233,7 @@
     var t1= Date.now()
     var tmp_newscore = parseInt(montecarlo(role, tmp_newstate, deadline, 1)); //1 depthcharge
     var one_mc_time= Date.now()-t1 // time for 1 depthcharge
-    var num_possible_depthcharge= (deadline/one_mc_time)-1 //total number of depthcharges possible in deadline time
+    var num_possible_depthcharge= ((deadline-Date.now())/one_mc_time)-1 //total number of depthcharges possible in deadline time
     if (num_possible_depthcharge > max_depthcharge) //clipping number of depthcharges to 500
     {
       num_possible_depthcharge= max_depthcharge

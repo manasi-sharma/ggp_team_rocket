@@ -13,8 +13,9 @@
 
   var player = 'team_rocket';
   var manager = 'team_rocket';
-  var num_workers = 100; // Number of depth charges to be done simultaneously
-  var count = 5; // Total number of depth charges / workers
+  var num_workers = 25; // Number of depth charges to be done simultaneously
+  var count = 1; // Total number of depth charges / workers
+  var tree_limit = 200
   var worker_instances = [];
   var worker_outputs = [];
   const sharedArrayBuffer = new SharedArrayBuffer(Int32Array.BYTES_PER_ELEMENT * num_workers);
@@ -252,7 +253,7 @@
       for (var i = 0; i < num_workers; i++) {
         // console.log("CALLING WORKER " + i);
         sharedArr[i] = -1;
-        worker_instances[i].postMessage([role, state, 200, i, library, sharedArr]);
+        worker_instances[i].postMessage([role, state, tree_limit, i, library, sharedArr]);
       }
       
       let done = false;
